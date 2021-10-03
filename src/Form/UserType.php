@@ -17,7 +17,7 @@ class UserType extends AbstractType
         $builder
             ->add('email', EmailType::class, ['disabled' => $options['is_edit']])
             ->add('password', PasswordType::class)
-            ->add('roles', CollectionType::class)
+            ->add('roles', CollectionType::class, ['disabled' => $options['is_edit']])
         ;
     }
 

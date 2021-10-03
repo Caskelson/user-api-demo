@@ -9,6 +9,8 @@ use App\Form\UserType;
 use App\Form\UpdateUserType;
 use Symfony\Component\Form\Form;
 use App\Traits\JsonHandlingTrait;
+use PhpParser\Node\Expr\Instanceof_;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -37,23 +39,11 @@ class UserCrudController extends AbstractController
     {
         $user = new User();
         $form = $this->createForm(UserType::class, $user);
-
-        $form->submit(
-            array_merge(
-                $this->getJsonFromRequest($request), 
-                $request->request->all()
-            )
-        );
-
-        if (!$form->isSubmitted() || !$form->isValid()) {
-            return $this->jsonResponseHandler(
-                $serializer,
-                $this->getJsonDefaultMessage("val_err", $this->getValidationErrors($form)),
-                Response::HTTP_BAD_REQUEST,
-            );
+    
+        if (($result = $this->processForm($form, $this->getJsonFromRequest($request), $serializer)) instanceof Response) {
+            return $result;
         }
         
-        $user = $form->getData();
         $user->setPassword($passwordHasher->hashPassword($user, $user->getPassword()));
         $this->getDoctrine()->getManager()->persist($user);
         $this->getDoctrine()->getManager()->flush();
@@ -70,23 +60,22 @@ class UserCrudController extends AbstractController
     {
         $email = $request->headers->get('Email');
         $data = $this->getJsonFromRequest($request);
-            
+
         if ($request->isMethod('PATCH')) {
-            $clearMissing = false;
-
-            if (array_key_exists('roles', $data))
-                unset($data['roles']);
-
+            if (!array_key_exists('password', $data) ? true : !$data['password']) {
+                return $this->jsonResponseHandler(
+                    $serializer,
+                    $this->getJsonDefaultMessage("val_err", ["password" => "This field can't be blank"]),
+                    Response::HTTP_BAD_REQUEST
+                );
+            }
             $user = $this->getDoctrine()->getRepository(User::class)->findOneByEmail($email);
             $form = $this->createForm(UpdateUserType::class, $user);
-        }
-        else {
-            $clearMissing = true;
-
+        } else {
             if (!array_key_exists('email', $data)) {
                 return $this->jsonResponseHandler(
                     $serializer,
-                    $this->getJsonDefaultMessage("val_err", "Missing email field indicating which user to edit"),
+                    $this->getJsonDefaultMessage("val_err", ["email" => "This field can't be blank"]),
                     Response::HTTP_BAD_REQUEST
                 );
             }
@@ -94,22 +83,10 @@ class UserCrudController extends AbstractController
             $form = $this->createForm(UserType::class, $user);
         }
 
-        $form->submit(
-            array_merge(
-                $data, 
-                $request->request->all()
-            ),
-            $clearMissing
-        );
-
-        if (!$form->isSubmitted() || !$form->isValid()) {
-            return $this->jsonResponseHandler(
-                $serializer,
-                $this->getJsonDefaultMessage("val_err", $this->getValidationErrors($form)),
-                Response::HTTP_BAD_REQUEST,
-            );
+        if (($result = $this->processForm($form, $data, $serializer)) instanceof Response) {
+            return $result;
         }
-
+        
         $user->setPassword($passwordHasher->hashPassword($user, $user->getPassword()));
         $this->getDoctrine()->getManager()->persist($user);
         $this->getDoctrine()->getManager()->flush();
@@ -129,7 +106,7 @@ class UserCrudController extends AbstractController
         if (!array_key_exists('email', $data)) {
             return $this->jsonResponseHandler(
                 $serializer,
-                $this->getJsonDefaultMessage("val_err", "Missing email field indicating which user to delete"),
+                $this->getJsonDefaultMessage("val_err", ["email" => "This field can't be blank"]),
                 Response::HTTP_BAD_REQUEST
             );
         }
@@ -148,6 +125,19 @@ class UserCrudController extends AbstractController
         );
     }
 
+    private function processForm(FormInterface $form, $data, SerializerInterface $serializer): FormInterface|Response
+    {
+        $form->submit($data);
+        if (!$form->isSubmitted() || !$form->isValid()) {
+            return $this->jsonResponseHandler(
+                $serializer,
+                $this->getJsonDefaultMessage("val_err", $this->getValidationErrors($form)),
+                Response::HTTP_BAD_REQUEST,
+            );
+        }
+        return $form;
+    }
+
     private function getValidationErrors(Form $form): array
     {
         $error_list = [];
@@ -158,7 +148,6 @@ class UserCrudController extends AbstractController
                 $error_list[$errors->getForm()->getName()][] = $error->getMessage();
             }
         }
-
         return $error_list;
     }
 }
