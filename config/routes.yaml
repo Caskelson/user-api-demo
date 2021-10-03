@@ -1,0 +1,25 @@
+api_keygen:
+    path: /api/keygen
+    controller: App\Controller\Security\KeyGenController::keygenAction
+    methods: [GET]
+
+user_create:
+    path: /api/users
+    controller: App\Controller\UserCrudController::createAction
+    methods: [POST]
+
+user_read:
+    path: /api/users
+    controller: App\Controller\UserCrudController::indexAction
+    methods: [GET]
+
+user_update:
+    path: /api/users
+    controller: App\Controller\UserCrudController::updateAction
+    methods: [PUT, PATCH]
+
+user_delete:
+    path: /api/users
+    controller: App\Controller\UserCrudController::deleteAction
+    methods: [DELETE]
+    

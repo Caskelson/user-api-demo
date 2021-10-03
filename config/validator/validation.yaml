@@ -1,0 +1,21 @@
+App\Entity\User:
+  constraints:
+    - Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity: 
+        fields: [email]
+        message: This email is already registered.
+        
+  properties:
+    email:
+      - NotBlank:
+          message: The {{ label }} can't be blank.
+      - Type:
+          type: string
+          message: The value {{ value }} is not a valid {{ type }}.
+      - Email:
+          message: Invalid email address.
+    password:
+      - NotBlank:
+          message: The {{ label }} can't be blank.
+      - Type:
+          type: string
+          message: The value {{ value }} is not a valid {{ type }}.
