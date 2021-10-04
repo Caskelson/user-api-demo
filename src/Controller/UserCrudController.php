@@ -69,7 +69,16 @@ class UserCrudController extends AbstractController
                     Response::HTTP_BAD_REQUEST
                 );
             }
+
             $user = $this->getDoctrine()->getRepository(User::class)->findOneByEmail($data['email']);
+            if(!$user) {
+                return $this->jsonResponseHandler(
+                    $serializer,
+                    $this->getJsonDefaultMessage("val_err", ["email" => "The email \"" . $data['email'] . "\" doesn't exist."]),
+                    Response::HTTP_BAD_REQUEST
+                );
+            }
+            
             $form = $this->createForm(UserType::class, $user);
         }
 
