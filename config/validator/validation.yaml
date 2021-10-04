@@ -2,7 +2,7 @@ App\Entity\User:
   constraints:
     - Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity: 
         fields: [email]
-        message: This email is already registered.
+        message: The email {{ value }} is already registered.
         
   properties:
     email:

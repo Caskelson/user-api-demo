@@ -37,23 +37,13 @@ class UserCrudController extends AbstractController
 
     public function createAction(Request $request, UserPasswordHasherInterface $passwordHasher, SerializerInterface $serializer): Response
     {
-        $user = new User();
-        $form = $this->createForm(UserType::class, $user);
-    
-        if (($result = $this->processForm($form, $this->getJsonFromRequest($request), $serializer)) instanceof Response) {
-            return $result;
-        }
+        $data = $this->getJsonFromRequest($request);
         
-        $user->setPassword($passwordHasher->hashPassword($user, $user->getPassword()));
-        $this->getDoctrine()->getManager()->persist($user);
-        $this->getDoctrine()->getManager()->flush();
-
-        return $this->jsonResponseHandler(
-            $serializer,
-            $this->getJsonDefaultMessage("val_suc", $user),
-            Response::HTTP_CREATED,
-            [ObjectNormalizer::GROUPS => ['user']]
-        );
+        if ($request->getPathInfo() == '/api/users-collection') {
+            return $this->createSeveralUsers($data, $serializer, $passwordHasher);
+        } else {
+            return $this->createSingleUser($data, $serializer, $passwordHasher);
+        }
     }
 
     public function updateAction(Request $request, UserPasswordHasherInterface $passwordHasher, SerializerInterface $serializer): Response
@@ -125,6 +115,67 @@ class UserCrudController extends AbstractController
         );
     }
 
+    private function createSeveralUsers($data, SerializerInterface $serializer, UserPasswordHasherInterface $passwordHasher): Response
+    {
+        $successfulUsers = [];
+        $errorList = [];
+        
+        foreach ($data as $key => $userData) {
+            $user = new User();
+            $form = $this->createForm(UserType::class, $user);
+
+            $form->submit($userData);
+            if (!$form->isSubmitted() || !$form->isValid()) {
+                $errorList[$key] = $this->getValidationErrors($form);
+                continue;
+            }
+
+            $successfulUsers[] = $user;
+        }
+
+        if (!empty($errorList)) {
+            return $this->jsonResponseHandler(
+                $serializer,
+                $this->getJsonDefaultMessage("val_err", $errorList),
+                Response::HTTP_BAD_REQUEST,
+            );
+        }
+
+        foreach ($successfulUsers as $user) {
+            $user->setPassword($passwordHasher->hashPassword($user, $user->getPassword()));
+            $this->getDoctrine()->getManager()->persist($user);
+        }
+        $this->getDoctrine()->getManager()->flush();
+
+        return $this->jsonResponseHandler(
+            $serializer,
+            $this->getJsonDefaultMessage("val_suc", $successfulUsers),
+            Response::HTTP_CREATED,
+            [ObjectNormalizer::GROUPS => ['user']]
+        );
+    }
+
+    private function createSingleUser($data, SerializerInterface $serializer, UserPasswordHasherInterface $passwordHasher): Response
+    {
+        $user = new User();
+        $form = $this->createForm(UserType::class, $user);
+        
+        if (($result = $this->processForm($form, $data, $serializer)) instanceof Response) {
+            return $result;
+        }
+        
+        $user->setPassword($passwordHasher->hashPassword($user, $user->getPassword()));
+        $this->getDoctrine()->getManager()->persist($user);
+        $this->getDoctrine()->getManager()->flush();
+
+        return $this->jsonResponseHandler(
+            $serializer,
+            $this->getJsonDefaultMessage("val_suc", $user),
+            Response::HTTP_CREATED,
+            [ObjectNormalizer::GROUPS => ['user']]
+        );
+    }
+
     private function processForm(FormInterface $form, $data, SerializerInterface $serializer): FormInterface|Response
     {
         $form->submit($data);
@@ -138,7 +189,7 @@ class UserCrudController extends AbstractController
         return $form;
     }
 
-    private function getValidationErrors(Form $form): array
+    private function getValidationErrors(FormInterface $form): array
     {
         $error_list = [];
         $errorIterator = $form->getErrors(true, false);
