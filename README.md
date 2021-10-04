@@ -1,6 +1,6 @@
 # user-api-demo
 
-A demonstration of an API application built with Symfony 5 for PHP 7.4^, using only symfony core packages. 
+A demonstration of an API application built with Symfony 5 for PHP 7.4^, using only symfony core packages, with every request and response standardized to json strings. 
 
 ## Install
 
