@@ -8,6 +8,11 @@ user_create:
     controller: App\Controller\UserCrudController::createAction
     methods: [POST]
 
+user_create_several:
+    path: /api/users-collection
+    controller: App\Controller\UserCrudController::createAction
+    methods: [POST]
+
 user_read:
     path: /api/users
     controller: App\Controller\UserCrudController::indexAction
