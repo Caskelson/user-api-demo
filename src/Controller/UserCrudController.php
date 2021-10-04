@@ -77,9 +77,10 @@ class UserCrudController extends AbstractController
             return $result;
         }
         
+        $em = $this->getDoctrine()->getManager();
         $user->setPassword($passwordHasher->hashPassword($user, $user->getPassword()));
-        $this->getDoctrine()->getManager()->persist($user);
-        $this->getDoctrine()->getManager()->flush();
+        $em->persist($user);
+        $em->flush();
 
         return $this->jsonResponseHandler(
             $serializer,
@@ -104,8 +105,9 @@ class UserCrudController extends AbstractController
         $user = $this->getDoctrine()->getRepository(User::class)->findOneByEmail($data['email']);
 
         if ($user) {
-            $this->getDoctrine()->getManager()->remove($user);
-            $this->getDoctrine()->getManager()->flush();
+            $em = $this->getDoctrine()->getManager();
+            $em->remove($user);
+            $em->flush();
         }
 
         return $this->jsonResponseHandler(
@@ -141,11 +143,12 @@ class UserCrudController extends AbstractController
             );
         }
 
+        $em = $this->getDoctrine()->getManager();
         foreach ($successfulUsers as $user) {
             $user->setPassword($passwordHasher->hashPassword($user, $user->getPassword()));
-            $this->getDoctrine()->getManager()->persist($user);
+            $em->persist($user);
         }
-        $this->getDoctrine()->getManager()->flush();
+        $em->flush();
 
         return $this->jsonResponseHandler(
             $serializer,
@@ -164,9 +167,10 @@ class UserCrudController extends AbstractController
             return $result;
         }
         
+        $em = $this->getDoctrine()->getManager();
         $user->setPassword($passwordHasher->hashPassword($user, $user->getPassword()));
-        $this->getDoctrine()->getManager()->persist($user);
-        $this->getDoctrine()->getManager()->flush();
+        $em->persist($user);
+        $em->flush();
 
         return $this->jsonResponseHandler(
             $serializer,
