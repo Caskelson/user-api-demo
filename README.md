@@ -40,4 +40,4 @@ All of the endpoints were tested with the browser extension [RESTED](https://git
 
 ### GET request to `~/api/keygen`
 
-!(/assets/examples/get.keygen.png)
+![Example of get request to /api/keygen endpoint](/assets/examples/get.keygen.png)
