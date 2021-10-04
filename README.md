@@ -32,4 +32,12 @@ Requests can be made to the `~/api/users` and `~/api/users-collection` paths.
 The former supports: **GET, POST, PUT, PATCH** and **DELETE**.
 The latter only supports **POST**.
 
-The content of these requests should be explicitly *application/json* in the content type header. They also require the email and auth-token headers described previously, with the exception of **PATCH** requests, which can be made by any user and require the same email and password headers.   
+The content of these requests should be explicitly *application/json* in the content type header. They also require the email and auth-token headers described previously, with the exception of **PATCH** requests, which can be made by any user and require his email and password credentials in the respective headers.
+
+## Examples
+
+All of the endpoints were tested with the browser extension [RESTED](https://github.com/RESTEDClient/RESTED).
+
+### GET request to `~/api/keygen`
+
+!(/assets/examples/get.keygen.png)
