@@ -41,3 +41,12 @@ All of the endpoints were tested with the browser extension [RESTED](https://git
 ### GET request to `~/api/keygen`
 
 ![Example of get request to /api/keygen endpoint](/assets/examples/get.keygen.PNG)
+
+### POST request to `~/api/users`
+
+![Example of post request to /api/users endpoint](/assets/examples/post.apiusers.PNG)
+
+### POST request to `~/api/users-collection`
+
+![Example of post request to /api/users-collection endpoint](/assets/examples/post.apiuserscollection.PNG)
+
