@@ -1,5 +1,7 @@
 # user-api-demo
 
+A demonstration of an API application built with Symfony 5 for PHP 7.4^, using only symfony core packages. 
+
 ## Install
 
 Clone the repository and run `composer install`
